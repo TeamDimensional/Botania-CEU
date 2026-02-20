@@ -290,7 +290,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 			List<ItemStack> matches = recipe.getMatches(stacksIn);
 			if(matches.size() == recipe.getInputs().size()) {
 				if(consumeMana(null, 500, false)) {
-					for(ItemStack r : matches) {
+					for(ItemStack r : matches)
 						stacksIn.remove(r);
 					}
 
