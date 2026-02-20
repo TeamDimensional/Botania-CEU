@@ -14,7 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -23,6 +22,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.OreDictionary;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.lexicon.ILexicon;
 import vazkii.botania.api.lexicon.multiblock.Multiblock;
@@ -49,6 +50,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class TileAlfPortal extends TileMod implements ITickable {
+
+	private static final Log log = LogFactory.getLog(TileAlfPortal.class);
 
 	private static BlockPos[] getLivingwoodPositions() {
 		List<BlockPos> positions = new ArrayList<>();
@@ -284,9 +287,13 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		}
 
 		for(RecipeElvenTrade recipe : BotaniaAPI.elvenTradeRecipes) {
-			if(recipe.matches(stacksIn, false)) {
+			List<ItemStack> matches = recipe.getMatches(stacksIn);
+			if(matches.size() == recipe.getInputs().size()) {
 				if(consumeMana(null, 500, false)) {
-					recipe.matches(stacksIn, true);
+					for(ItemStack r : matches) {
+						stacksIn.remove(r);
+					}
+
 					for(ItemStack output : recipe.getOutputs())
 						spawnItem(output.copy());
 				}

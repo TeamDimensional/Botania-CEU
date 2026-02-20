@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RecipeElvenTrade {
@@ -25,27 +26,36 @@ public class RecipeElvenTrade {
 		this.inputs = inputsToSet.build();
 	}
 
-	public boolean matches(List<ItemStack> stacks, boolean remove) {
+	public List<ItemStack> getMatches(List<ItemStack> stacks) {
 		List<Object> inputsMissing = new ArrayList<>(inputs);
 		List<ItemStack> stacksToRemove = new ArrayList<>();
+		List<List<ItemStack>> validStacks = new ArrayList<>();
 
-		for(ItemStack stack : stacks) {
-			if(stack.isEmpty()) {
+		for (Object input : inputs) {
+			if (input instanceof String)
+				validStacks.add(OreDictionary.getOres((String) input));
+			else
+				validStacks.add(Collections.emptyList());
+		}
+
+
+		for (ItemStack stack : stacks) {
+			if (stack.isEmpty()) {
 				continue;
 			}
-			if(inputsMissing.isEmpty())
+			if (inputsMissing.isEmpty())
 				break;
 
 			int stackIndex = -1, oredictIndex = -1;
 
-			for(int j = 0; j < inputsMissing.size(); j++) {
+			for (int j = 0; j < inputsMissing.size(); j++) {
 				Object input = inputsMissing.get(j);
-				if(input instanceof String) {
-					List<ItemStack> validStacks = OreDictionary.getOres((String) input);
+				if (input instanceof String) {
 					boolean found = false;
-					for(ItemStack ostack : validStacks) {
-						if(OreDictionary.itemMatches(ostack, stack, false)) {
-							if(!stacksToRemove.contains(stack))
+					for (int o = 0; o < validStacks.get(j).size(); o++) {
+						ItemStack oreStack = validStacks.get(j).get(o);
+						if (OreDictionary.itemMatches(oreStack, stack, false)) {
+							if (!stacksToRemove.contains(stack))
 								stacksToRemove.add(stack);
 							oredictIndex = j;
 							found = true;
@@ -53,27 +63,23 @@ public class RecipeElvenTrade {
 						}
 					}
 
-					if(found)
+					if (found)
 						break;
-				} else if(input instanceof ItemStack && simpleAreStacksEqual((ItemStack) input, stack)) {
-					if(!stacksToRemove.contains(stack))
+				} else if (input instanceof ItemStack && simpleAreStacksEqual((ItemStack) input, stack)) {
+					if (!stacksToRemove.contains(stack))
 						stacksToRemove.add(stack);
 					stackIndex = j;
 					break;
 				}
 			}
 
-			if(stackIndex != -1)
+			if (stackIndex != -1)
 				inputsMissing.remove(stackIndex);
-			else if(oredictIndex != -1)
+			else if (oredictIndex != -1)
 				inputsMissing.remove(oredictIndex);
 		}
 
-		if(remove)
-			for(ItemStack r : stacksToRemove)
-				stacks.remove(r);
-
-		return inputsMissing.isEmpty();
+		return stacksToRemove;
 	}
 
 	private boolean simpleAreStacksEqual(ItemStack stack, ItemStack stack2) {
