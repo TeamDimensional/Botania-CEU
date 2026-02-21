@@ -14,16 +14,20 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import scala.collection.mutable.HashTable;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.lexicon.ILexicon;
 import vazkii.botania.api.lexicon.multiblock.Multiblock;
@@ -45,8 +49,7 @@ import vazkii.botania.common.lexicon.LexiconData;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 public class TileAlfPortal extends TileMod implements ITickable {
@@ -98,7 +101,49 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	private static final String TAG_STACK = "portalStack";
 	private static final String TAG_PORTAL_FLAG = "_elvenPortal";
 
-	private final List<ItemStack> stacksIn = new ArrayList<>();
+	/**
+	 * An extension of ArrayList that tracks the index of each item inserted.
+	 * Remo
+	 */
+    public class AlfPortalInputs<E extends ItemStack> extends ArrayList<ItemStack> {
+		@Override
+		public boolean add(ItemStack stack) {
+			for (ItemStack stackIn : this) {
+				if (stackIn.isItemEqual(stack)) {
+					stackIn.setCount(stackIn.getCount() + stack.getCount());
+					return true;
+				}
+			}
+			super.add(stack.copy());
+			return true;
+		}
+
+		public ItemStack remove(ItemStack stack) {
+			int index = getItemPosition(stack);
+			if (this.get(index).getCount() < stack.getCount()) {
+				throw new IllegalArgumentException("Tried to remove more items than were present");
+			}
+			else if (this.get(index).getCount() - stack.getCount() == 0) {
+				return super.remove(index);
+			}
+			else {
+				this.get(index).setCount(this.get(index).getCount() - stack.getCount());
+				return this.get(index);
+			}
+		}
+
+		public int getItemPosition(ItemStack stack) {
+			for(int i = 0; i < this.size(); i++) {
+				ItemStack input = this.get(i);
+				if (input.isItemEqual(stack)) {
+					return i;
+				}
+			}
+			return -1;
+		}
+	}
+
+	private final AlfPortalInputs<ItemStack> stacksIn = new AlfPortalInputs<>();
 
 	public int ticksOpen = 0;
 	private int ticksSinceLastItem = 0;
@@ -153,8 +198,8 @@ public class TileAlfPortal extends TileMod implements ITickable {
 
 			List<EntityItem> items = world.getEntitiesWithinAABB(EntityItem.class, aabb);
 			if(!world.isRemote)
-				for(EntityItem item : items) {
-					if(item.isDead)
+				for (EntityItem item : items) {
+					if (item.isDead)
 						continue;
 
 					ItemStack stack = item.getItem();
@@ -170,16 +215,22 @@ public class TileAlfPortal extends TileMod implements ITickable {
 					}
 
 					if (consume) {
-						item.setDead();
-						if (validateItemUsage(stack))
+						if (validateItemUsage(stack)) {
+							item.setDead();
 							addItem(stack);
+						}
 						ticksSinceLastItem = 0;
 					}
 				}
-
 			if(ticksSinceLastItem >= 4) {
-				if(!world.isRemote)
+				if(!world.isRemote) {
+					try {
+						getWorld().getMinecraftServer().getPlayerList().getPlayers().get(0).sendMessage(new TextComponentString(String.valueOf(stacksIn.get(0))));
+					} catch (Exception e) {
+
+					}
 					resolveRecipes();
+				}
 			}
 		}
 
@@ -264,10 +315,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	}
 
 	private void addItem(ItemStack stack) {
-		int size = stack.getCount();
-		stack.setCount(1);
-		for(int i = 0; i < size; i++)
-			stacksIn.add(stack.copy());
+		stacksIn.add(stack.copy());
 	}
 
 	private void resolveRecipes() {
@@ -288,10 +336,16 @@ public class TileAlfPortal extends TileMod implements ITickable {
 
 		for(RecipeElvenTrade recipe : BotaniaAPI.elvenTradeRecipes) {
 			List<ItemStack> matches = recipe.getMatches(stacksIn);
-			if(matches.size() == recipe.getInputs().size()) {
+
+			int cumulativeCount = 0;
+
+			for (ItemStack match : matches)
+				cumulativeCount += match.getCount();
+
+			if(cumulativeCount == recipe.getInputs().size()) {
 				if(consumeMana(null, 500, false)) {
-					for(ItemStack r : matches)
-						stacksIn.remove(r);
+					for(ItemStack match : matches)
+						stacksIn.remove(match);
 
 					for(ItemStack output : recipe.getOutputs())
 						spawnItem(output.copy());

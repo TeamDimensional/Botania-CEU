@@ -1,8 +1,11 @@
 package vazkii.botania.api.recipe;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+import vazkii.botania.common.block.tile.TileAlfPortal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +29,7 @@ public class RecipeElvenTrade {
 		this.inputs = inputsToSet.build();
 	}
 
-	public List<ItemStack> getMatches(List<ItemStack> stacks) {
+	public List<ItemStack> getMatches(TileAlfPortal.AlfPortalInputs<ItemStack> stacks) {
 		List<Object> inputsMissing = new ArrayList<>(inputs);
 		List<ItemStack> stacksToRemove = new ArrayList<>();
 		List<List<ItemStack>> validStacks = new ArrayList<>();
@@ -55,19 +58,35 @@ public class RecipeElvenTrade {
 					for (int o = 0; o < validStacks.get(j).size(); o++) {
 						ItemStack oreStack = validStacks.get(j).get(o);
 						if (OreDictionary.itemMatches(oreStack, stack, false)) {
-							if (!stacksToRemove.contains(stack))
-								stacksToRemove.add(stack);
+							boolean exists = false;
+                            for (ItemStack stackIn : stacksToRemove) {
+                                if (stackIn.isItemEqual(stack)) {
+                                    stackIn.setCount(stackIn.getCount() + oreStack.getCount());
+                                    exists = true;
+                                    break;
+                                }
+                            }
+							if (!exists)
+								stacksToRemove.add(oreStack.copy());
 							oredictIndex = j;
 							found = true;
 							break;
 						}
 					}
 
-					if (found)
-						break;
 				} else if (input instanceof ItemStack && simpleAreStacksEqual((ItemStack) input, stack)) {
-					if (!stacksToRemove.contains(stack))
-						stacksToRemove.add(stack);
+					ItemStack singular = stack.copy();
+					singular.setCount(1);
+					boolean exists = false;
+					for (ItemStack stackIn : stacksToRemove) {
+						if (stackIn.isItemEqual(stack)) {
+							stackIn.setCount(stackIn.getCount() + singular.getCount());
+							exists = true;
+							break;
+						}
+					}
+					if (!exists)
+						stacksToRemove.add(singular.copy());
 					stackIndex = j;
 					break;
 				}
