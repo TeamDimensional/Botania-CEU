@@ -54,22 +54,22 @@ public class RecipeElvenTrade {
 			for (int j = 0; j < inputsMissing.size(); j++) {
 				Object input = inputsMissing.get(j);
 				if (input instanceof String) {
-					boolean found = false;
-					for (int o = 0; o < validStacks.get(j).size(); o++) {
-						ItemStack oreStack = validStacks.get(j).get(o);
+					for (int o = 0; o < validStacks.get(j + (validStacks.size() - inputsMissing.size())).size(); o++) {
+						ItemStack oreStack = validStacks.get(j + (validStacks.size() - inputsMissing.size())).get(o);
 						if (OreDictionary.itemMatches(oreStack, stack, false)) {
+							ItemStack singular = stack.copy();
+							singular.setCount(1);
 							boolean exists = false;
                             for (ItemStack stackIn : stacksToRemove) {
-                                if (stackIn.isItemEqual(stack)) {
-                                    stackIn.setCount(stackIn.getCount() + oreStack.getCount());
+                                if (simpleAreStacksEqual(stackIn, stack)) {
+                                    stackIn.setCount(stackIn.getCount() + 1);
                                     exists = true;
                                     break;
                                 }
                             }
 							if (!exists)
-								stacksToRemove.add(oreStack.copy());
+								stacksToRemove.add(singular.copy());
 							oredictIndex = j;
-							found = true;
 							break;
 						}
 					}
@@ -79,8 +79,8 @@ public class RecipeElvenTrade {
 					singular.setCount(1);
 					boolean exists = false;
 					for (ItemStack stackIn : stacksToRemove) {
-						if (stackIn.isItemEqual(stack)) {
-							stackIn.setCount(stackIn.getCount() + singular.getCount());
+						if (simpleAreStacksEqual(stackIn, stack)) {
+							stackIn.setCount(stackIn.getCount() + 1);
 							exists = true;
 							break;
 						}
@@ -88,7 +88,6 @@ public class RecipeElvenTrade {
 					if (!exists)
 						stacksToRemove.add(singular.copy());
 					stackIndex = j;
-					break;
 				}
 			}
 

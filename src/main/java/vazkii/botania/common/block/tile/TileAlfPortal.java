@@ -14,8 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -27,7 +25,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import scala.collection.mutable.HashTable;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.lexicon.ILexicon;
 import vazkii.botania.api.lexicon.multiblock.Multiblock;
@@ -102,10 +99,15 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	private static final String TAG_PORTAL_FLAG = "_elvenPortal";
 
 	/**
-	 * An extension of ArrayList that tracks the index of each item inserted.
-	 * Remo
+	 * An extension of ArrayList that implements methods to manage ItemStacks within the ArrayList simultaneously
 	 */
     public class AlfPortalInputs<E extends ItemStack> extends ArrayList<ItemStack> {
+		/**
+		 * Adds {@code ItemStack.stackSize} to a matching<sup style="font-size:0.8em; font-style:italic;">isItemEqual()</sup> stack within the ArrayList
+		 * <p>If no match is found, it is added as a new element on the end</p>
+		 * @param stack item to be added to either existing stacks or as a new element on the end
+		 * @return false if added to an existing item, returns false if a new element was created instead
+		 */
 		@Override
 		public boolean add(ItemStack stack) {
 			for (ItemStack stackIn : this) {
@@ -114,32 +116,31 @@ public class TileAlfPortal extends TileMod implements ITickable {
 					return true;
 				}
 			}
-			super.add(stack.copy());
-			return true;
+			ItemStack stackCopy = stack.copy();
+			stackCopy.getItem().setMaxStackSize(stack.getCount());
+			super.add(stackCopy);
+			return false;
 		}
 
-		public ItemStack remove(ItemStack stack) {
+		public void remove(ItemStack stack) {
 			int index = getItemPosition(stack);
-			if (this.get(index).getCount() < stack.getCount()) {
+			if (this.get(index).getCount() < stack.getCount())
 				throw new IllegalArgumentException("Tried to remove more items than were present");
-			}
-			else if (this.get(index).getCount() - stack.getCount() == 0) {
-				return super.remove(index);
-			}
-			else {
+			else if (this.get(index).getCount() - stack.getCount() == 0)
+				super.remove(index);
+			else
 				this.get(index).setCount(this.get(index).getCount() - stack.getCount());
-				return this.get(index);
-			}
 		}
 
 		public int getItemPosition(ItemStack stack) {
 			for(int i = 0; i < this.size(); i++) {
 				ItemStack input = this.get(i);
-				if (input.isItemEqual(stack)) {
+				if (stack.getItem() == input.getItem() && stack.getItemDamage() == input.getItemDamage()) {
 					return i;
 				}
 			}
-			return -1;
+			Botania.LOGGER.error("Could not find index of requested item in TileAlfPortal block, returning index of 0 instead");
+			return 0;
 		}
 	}
 
@@ -215,8 +216,8 @@ public class TileAlfPortal extends TileMod implements ITickable {
 					}
 
 					if (consume) {
+						item.setDead();
 						if (validateItemUsage(stack)) {
-							item.setDead();
 							addItem(stack);
 						}
 						ticksSinceLastItem = 0;
@@ -251,8 +252,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	}
 
 	private boolean validateItemUsage(ItemStack inputStack) {
-		if (stacksIn.size() >= 128) {
-			// don't chunk ban when the queue of portal is large
+		if (stacksIn.size() >= 1000) { // even the most extreme estimates of 1kb per itemstack, this comes nowhere near a chunk ban
 			return false;
 		}
 
