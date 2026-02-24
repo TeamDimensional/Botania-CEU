@@ -96,6 +96,8 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	private static final String TAG_TICKS_SINCE_LAST_ITEM = "ticksSinceLastItem";
 	private static final String TAG_STACK_COUNT = "stackCount";
 	private static final String TAG_STACK = "portalStack";
+	// Because our itemStack size may exceed 128, we need to write it separately
+	private static final String TAG_STACK_SIZE = "portalStackCount";
 	private static final String TAG_PORTAL_FLAG = "_elvenPortal";
 
 	/**
@@ -112,7 +114,6 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		public boolean add(ItemStack stack) {
 			for (ItemStack stackIn : this) {
 				if (stackIn.isItemEqual(stack)) {
-					stackIn.setCount(stackIn.getCount() + stack.getCount());
 					return true;
 				}
 			}
@@ -372,6 +373,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		for(ItemStack stack : stacksIn) {
 			NBTTagCompound stackcmp = stack.writeToNBT(new NBTTagCompound());
 			cmp.setTag(TAG_STACK + i, stackcmp);
+			cmp.setInteger(TAG_STACK_SIZE + i, stack.getCount());
 			i++;
 		}
 
@@ -387,6 +389,10 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		for(int i = 0; i < count; i++) {
 			NBTTagCompound stackcmp = cmp.getCompoundTag(TAG_STACK + i);
 			ItemStack stack = new ItemStack(stackcmp);
+			int stackSize = cmp.getInteger(TAG_STACK_SIZE + i);
+			// When migrating from an old saved with an old version of Botania, there is no TAG_STACK_SIZE present
+			// as all stacks are expected to have a size of 1
+			stack.setCount(Math.max(stackSize, 1));
 			stacksIn.add(stack);
 		}
 	}
