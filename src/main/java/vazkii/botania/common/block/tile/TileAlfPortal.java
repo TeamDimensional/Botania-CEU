@@ -114,11 +114,11 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		public boolean add(ItemStack stack) {
 			for (ItemStack stackIn : this) {
 				if (stackIn.isItemEqual(stack)) {
+					stackIn.setCount(stackIn.getCount() + stack.getCount());
 					return true;
 				}
 			}
 			ItemStack stackCopy = stack.copy();
-			stackCopy.getItem().setMaxStackSize(stack.getCount());
 			super.add(stackCopy);
 			return false;
 		}
