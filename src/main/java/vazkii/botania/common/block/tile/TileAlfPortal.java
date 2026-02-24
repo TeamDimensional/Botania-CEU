@@ -427,10 +427,6 @@ public class TileAlfPortal extends TileMod implements ITickable {
 			return false;
 		if(!check2DArray(GLIMMERING_LIVINGWOOD_POSITIONS, ModBlocks.livingwood.getDefaultState().withProperty(BotaniaStateProps.LIVINGWOOD_VARIANT, LivingWoodVariant.GLIMMERING), false, converters))
 			return false;
-		//		if(!check2DArray(PYLON_POSITIONS, ModBlocks.pylon.getDefaultState().withProperty(BotaniaStateProps.PYLON_VARIANT, PylonVariant.NATURA), false, converters))
-		//			return false;
-		//		if(!check2DArray(POOL_POSITIONS, ModBlocks.pool.getDefaultState(), true, converters))
-		//			return false;
 
 		lightPylons();
 		return true;
