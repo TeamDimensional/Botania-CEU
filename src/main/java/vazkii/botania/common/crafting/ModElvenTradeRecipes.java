@@ -22,12 +22,9 @@ public class ModElvenTradeRecipes {
 	public static List<RecipeElvenTrade> dragonstoneRecipes;
 	public static RecipeElvenTrade elvenQuartzRecipe;
 	public static RecipeElvenTrade alfglassRecipe;
-	public static RecipeElvenTrade test;
 
 	public static void init() {
 		dreamwoodRecipe = BotaniaAPI.registerElvenTradeRecipe(new ItemStack(ModBlocks.dreamwood), LibOreDict.LIVING_WOOD);
-
-		test = BotaniaAPI.registerElvenTradeRecipe(new ItemStack(Items.DIAMOND), new ItemStack(Item.getItemById(12)), LibOreDict.DYE_WILDCARD);
 
 		elementiumRecipes = new ArrayList<>();
 		elementiumRecipes.add(BotaniaAPI.registerElvenTradeRecipe(new ItemStack(ModItems.manaResource, 1, 7), LibOreDict.MANA_STEEL, LibOreDict.MANA_STEEL));
