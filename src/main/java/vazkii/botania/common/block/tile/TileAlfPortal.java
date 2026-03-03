@@ -105,13 +105,18 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	 */
     public class AlfPortalInputs<E extends ItemStack> extends ArrayList<ItemStack> {
 		/**
-		 * Adds {@code ItemStack.stackSize} to a matching<sup style="font-size:0.8em; font-style:italic;">isItemEqual()</sup> stack within the ArrayList
+		 * Adds {@link ItemStack#getCount() stack.getCount} to a {@link ItemStack#isItemEqual(ItemStack) matching} stack within the ArrayList
 		 * <p>If no match is found, it is added as a new element on the end</p>
 		 * @param stack item to be added to either existing stacks or as a new element on the end
-		 * @return false if added to an existing item, returns false if a new element was created instead
+		 * @return true if added to an existing item, returns false if a new element was created instead
 		 */
 		@Override
 		public boolean add(ItemStack stack) {
+			if(stack.getItem() == ModItems.lexicon) {
+				ItemStack stackCopy = stack.copy();
+				super.add(stackCopy);
+				return false;
+			}
 			for (ItemStack stackIn : this) {
 				if (stackIn.isItemEqual(stack)) {
 					stackIn.setCount(stackIn.getCount() + stack.getCount());
@@ -123,16 +128,27 @@ public class TileAlfPortal extends TileMod implements ITickable {
 			return false;
 		}
 
+		/**
+		 * Removes {@link ItemStack#getCount() stack.getCount} from a {@link AlfPortalInputs#getItemPosition(ItemStack) matching} stack within the ArrayList,
+		 * or deletes the item from the array if it reaches 0
+		 * <p style="font-size:0.8em; font-style:italic;">Note that this uses a different comparison method to {@link AlfPortalInputs#add(ItemStack)}</p>
+		 * @param stack item to be removed from existing stacks
+		 */
 		public void remove(ItemStack stack) {
 			int index = getItemPosition(stack);
-			if (this.get(index).getCount() < stack.getCount())
-				throw new IllegalArgumentException("Tried to remove more items than were present");
+			if (this.get(index).getCount() < stack.getCount()) {
+				Botania.LOGGER.error("Botania-CEU Alfheim Portal tried to remove more items than were present in the queue");
+				throw new IllegalArgumentException("Tried to remove more items than were present in the queue");
+			}
 			else if (this.get(index).getCount() - stack.getCount() == 0)
 				super.remove(index);
 			else
 				this.get(index).setCount(this.get(index).getCount() - stack.getCount());
 		}
 
+		/**
+		 * @return index in the ArrayList that the requested ItemStack is at, or zero if it could not be found
+		 */
 		public int getItemPosition(ItemStack stack) {
 			for(int i = 0; i < this.size(); i++) {
 				ItemStack input = this.get(i);
@@ -323,11 +339,11 @@ public class TileAlfPortal extends TileMod implements ITickable {
 				if (!lexicon.isKnowledgeUnlocked(stack, BotaniaAPI.elvenKnowledge)) {
 					lexicon.unlockKnowledge(stack, BotaniaAPI.elvenKnowledge);
 					ItemLexicon.setForcedPage(stack, LexiconData.elvenMessage.getUnlocalizedName());
-					spawnItem(stack);
-					stacksIn.remove(i);
-					return;
-				}
-			}
+                }
+                spawnItem(stack);
+                stacksIn.remove(i);
+                return;
+            }
 			i++;
 		}
 
