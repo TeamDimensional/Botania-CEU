@@ -238,11 +238,6 @@ public class TileAlfPortal extends TileMod implements ITickable {
 				}
 			if(ticksSinceLastItem >= 4) {
 				if(!world.isRemote) {
-					try {
-						getWorld().getMinecraftServer().getPlayerList().getPlayers().get(0).sendMessage(new TextComponentString(String.valueOf(stacksIn.get(0))));
-					} catch (Exception e) {
-
-					}
 					resolveRecipes();
 				}
 			}
