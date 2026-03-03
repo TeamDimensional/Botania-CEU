@@ -102,7 +102,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 	/**
 	 * An extension of ArrayList that implements methods to manage ItemStacks within the ArrayList simultaneously
 	 */
-    public class AlfPortalInputs<E extends ItemStack> extends ArrayList<ItemStack> {
+    public class AlfPortalInputs extends ArrayList<ItemStack> {
 		/**
 		 * Adds {@link ItemStack#getCount() stack.getCount} to a {@link ItemStack#isItemEqual(ItemStack) matching} stack within the ArrayList
 		 * <p>If no match is found, it is added as a new element on the end</p>
