@@ -1,8 +1,6 @@
 package vazkii.botania.api.recipe;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import vazkii.botania.common.block.tile.TileAlfPortal;
