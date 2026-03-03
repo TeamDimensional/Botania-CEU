@@ -160,7 +160,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		}
 	}
 
-	private final AlfPortalInputs<ItemStack> stacksIn = new AlfPortalInputs<>();
+	private final AlfPortalInputs stacksIn = new AlfPortalInputs();
 
 	public int ticksOpen = 0;
 	private int ticksSinceLastItem = 0;

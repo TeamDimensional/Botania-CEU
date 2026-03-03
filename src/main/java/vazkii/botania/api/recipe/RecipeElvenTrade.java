@@ -27,7 +27,7 @@ public class RecipeElvenTrade {
 		this.inputs = inputsToSet.build();
 	}
 
-	public List<ItemStack> getMatches(TileAlfPortal.AlfPortalInputs<ItemStack> stacks) {
+	public List<ItemStack> getMatches(TileAlfPortal.AlfPortalInputs stacks) {
 		List<Object> inputsMissing = new ArrayList<>(inputs);
 		List<ItemStack> stacksToRemove = new ArrayList<>();
 		List<List<ItemStack>> validStacks = new ArrayList<>();
