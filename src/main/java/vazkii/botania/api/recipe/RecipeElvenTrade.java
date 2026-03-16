@@ -54,13 +54,13 @@ public class RecipeElvenTrade {
 					for (int o = 0; o < validStacks.get(j + (validStacks.size() - inputsMissing.size())).size(); o++) {
 						ItemStack oreStack = validStacks.get(j + (validStacks.size() - inputsMissing.size())).get(o);
 						if (OreDictionary.itemMatches(oreStack, stack, false)) {
-							oredictIndex = handleOredictMatch(stack, stacksToRemove, j);
+							oredictIndex = handleMatch(stack, stacksToRemove, j);
 							break;
 						}
 					}
 
 				} else if (input instanceof ItemStack && simpleAreStacksEqual((ItemStack) input, stack)) {
-					stackIndex = handleSimpleMatch(stack, stacksToRemove, j);
+					stackIndex = handleMatch(stack, stacksToRemove, j);
 				}
 			}
 
@@ -73,8 +73,8 @@ public class RecipeElvenTrade {
 		return stacksToRemove;
 	}
 
-	private int handleSimpleMatch(ItemStack stack, List<ItemStack> stacksToRemove, int j) {
-		int stackIndex = -1;
+	private int handleMatch(ItemStack stack, List<ItemStack> stacksToRemove, int j) {
+		int index = -1;
 		ItemStack singular = stack.copy();
 		singular.setCount(1);
 		boolean exists = false;
@@ -86,35 +86,13 @@ public class RecipeElvenTrade {
 					break;
 				}
 				else
-					return stackIndex;
+					return index;
 			}
 		}
 		if (!exists)
 			stacksToRemove.add(singular.copy());
-		stackIndex = j;
-		return stackIndex;
-	}
-
-	private int handleOredictMatch(ItemStack stack, List<ItemStack> stacksToRemove, int j) {
-		int oredictIndex = -1;
-		ItemStack singular = stack.copy();
-		singular.setCount(1);
-		boolean exists = false;
-		for (ItemStack stackIn : stacksToRemove) {
-			if (simpleAreStacksEqual(stackIn, stack)) {
-				if (stack.getCount() >= stackIn.getCount() + 1) {
-					stackIn.setCount(stackIn.getCount() + 1);
-					exists = true;
-					break;
-				}
-				else
-					return oredictIndex;
-			}
-		}
-		if (!exists)
-			stacksToRemove.add(singular.copy());
-		oredictIndex = j;
-		return oredictIndex;
+		index = j;
+		return index;
 	}
 
 	private boolean simpleAreStacksEqual(ItemStack stack, ItemStack stack2) {
