@@ -22,6 +22,6 @@ public class ItemBlockStorage extends ItemBlockWithMetadataAndName implements IE
 
 	@Override
 	public boolean isElvenItem(ItemStack stack) {
-		return stack.getItemDamage() == 2;
+		return stack.getItemDamage() == 2 || stack.getItemDamage() == 4;
 	}
 }
