@@ -3,7 +3,6 @@ package vazkii.botania.api.recipe;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
-import vazkii.botania.common.block.tile.TileAlfPortal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,37 +54,13 @@ public class RecipeElvenTrade {
 					for (int o = 0; o < validStacks.get(j + (validStacks.size() - inputsMissing.size())).size(); o++) {
 						ItemStack oreStack = validStacks.get(j + (validStacks.size() - inputsMissing.size())).get(o);
 						if (OreDictionary.itemMatches(oreStack, stack, false)) {
-							ItemStack singular = stack.copy();
-							singular.setCount(1);
-							boolean exists = false;
-                            for (ItemStack stackIn : stacksToRemove) {
-                                if (simpleAreStacksEqual(stackIn, stack)) {
-                                    stackIn.setCount(stackIn.getCount() + 1);
-                                    exists = true;
-                                    break;
-                                }
-                            }
-							if (!exists)
-								stacksToRemove.add(singular.copy());
-							oredictIndex = j;
+							oredictIndex = handleOredictMatch(stack, stacksToRemove, j);
 							break;
 						}
 					}
 
 				} else if (input instanceof ItemStack && simpleAreStacksEqual((ItemStack) input, stack)) {
-					ItemStack singular = stack.copy();
-					singular.setCount(1);
-					boolean exists = false;
-					for (ItemStack stackIn : stacksToRemove) {
-						if (simpleAreStacksEqual(stackIn, stack)) {
-							stackIn.setCount(stackIn.getCount() + 1);
-							exists = true;
-							break;
-						}
-					}
-					if (!exists)
-						stacksToRemove.add(singular.copy());
-					stackIndex = j;
+					stackIndex = handleSimpleMatch(stack, stacksToRemove, j);
 				}
 			}
 
@@ -96,6 +71,50 @@ public class RecipeElvenTrade {
 		}
 
 		return stacksToRemove;
+	}
+
+	private int handleSimpleMatch(ItemStack stack, List<ItemStack> stacksToRemove, int j) {
+		int stackIndex = -1;
+		ItemStack singular = stack.copy();
+		singular.setCount(1);
+		boolean exists = false;
+		for (ItemStack stackIn : stacksToRemove) {
+			if (simpleAreStacksEqual(stackIn, stack)) {
+				if (stack.getCount() >= stackIn.getCount() + 1) {
+					stackIn.setCount(stackIn.getCount() + 1);
+					exists = true;
+					break;
+				}
+				else
+					return stackIndex;
+			}
+		}
+		if (!exists)
+			stacksToRemove.add(singular.copy());
+		stackIndex = j;
+		return stackIndex;
+	}
+
+	private int handleOredictMatch(ItemStack stack, List<ItemStack> stacksToRemove, int j) {
+		int oredictIndex = -1;
+		ItemStack singular = stack.copy();
+		singular.setCount(1);
+		boolean exists = false;
+		for (ItemStack stackIn : stacksToRemove) {
+			if (simpleAreStacksEqual(stackIn, stack)) {
+				if (stack.getCount() >= stackIn.getCount() + 1) {
+					stackIn.setCount(stackIn.getCount() + 1);
+					exists = true;
+					break;
+				}
+				else
+					return oredictIndex;
+			}
+		}
+		if (!exists)
+			stacksToRemove.add(singular.copy());
+		oredictIndex = j;
+		return oredictIndex;
 	}
 
 	private boolean simpleAreStacksEqual(ItemStack stack, ItemStack stack2) {
