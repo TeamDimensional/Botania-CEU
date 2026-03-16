@@ -132,17 +132,21 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		 * or deletes the item from the array if it reaches 0
 		 * <p style="font-size:0.8em; font-style:italic;">Note that this uses a different comparison method to {@link AlfPortalInputs#add(ItemStack)}</p>
 		 * @param stack item to be removed from existing stacks
+		 * @return true if removed successfully, returns false if it was unsuccessful
 		 */
-		public void remove(ItemStack stack) {
+		public boolean remove(ItemStack stack) {
 			int index = getItemPosition(stack);
-			if (this.get(index).getCount() < stack.getCount()) {
-				Botania.LOGGER.error("Botania-CEU Alfheim Portal tried to remove more items than were present in the queue");
-				throw new IllegalArgumentException("Tried to remove more items than were present in the queue");
+			if (index >= this.size() || this.get(index).getCount() < stack.getCount()) {
+				Botania.LOGGER.error("Botania-CEU Alfheim Portal tried to remove more items than were present in the queue \n" +
+						"Internal error! Should not occur, if you ever see this, please open an issue at github.com/TeamDimensional/Botania-CEU \n" +
+						"(note that this is not the original 1.12 version by Vazkii)");
+				return false;
 			}
 			else if (this.get(index).getCount() - stack.getCount() == 0)
 				super.remove(index);
 			else
 				this.get(index).setCount(this.get(index).getCount() - stack.getCount());
+			return true;
 		}
 
 		/**
@@ -352,7 +356,8 @@ public class TileAlfPortal extends TileMod implements ITickable {
 			if(cumulativeCount == recipe.getInputs().size()) {
 				if(consumeMana(null, 500, false)) {
 					for(ItemStack match : matches)
-						stacksIn.remove(match);
+						if (!stacksIn.remove(match))
+							return;
 
 					for(ItemStack output : recipe.getOutputs())
 						spawnItem(output.copy());
