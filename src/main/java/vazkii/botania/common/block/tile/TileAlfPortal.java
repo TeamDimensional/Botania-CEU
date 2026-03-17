@@ -355,7 +355,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 				cumulativeCount += match.getCount();
 
 			if(cumulativeCount == recipe.getInputs().size()) {
-				if(consumeMana(pylonCache, 500, false)) {
+				if(consumeMana(500, false)) {
 					for(ItemStack match : matches)
 						if (!stacksIn.remove(match))
 							return;
@@ -483,30 +483,29 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		}
 
 		if(ticksOpen == 50)
-			consumeMana(pylonCache, 200000, true);
+			consumeMana(200000, true);
 	}
 
-	public boolean consumeMana(@Nullable List<BlockPos> pylons, int totalCost, boolean close) {
+	public boolean consumeMana(int totalCost, boolean close) {
 		IBlockState pylonState = ModBlocks.pylon.getDefaultState().withProperty(BotaniaStateProps.PYLON_VARIANT, PylonVariant.NATURA);
 		IBlockState poolState = ModBlocks.pool.getDefaultState();
 		List<TilePool> consumePools = new ArrayList();
 		int consumed = 0;
 
-		for (BlockPos pos : pylons)
+		for (BlockPos pos : pylonCache)
 			if (!checkPosition(pos, pylonState, false) || !checkPosition(pos.down(), poolState, true)) {
-				pylons = locatePylons();
-				pylonCache = pylons;
+				pylonCache = locatePylons();
 			}
 
-		if(pylons.size() < 2) {
+		if(pylonCache.size() < 2) {
 			closeNow = true;
 			return false;
 		}
 
-		int costPer = Math.max(1, totalCost / pylons.size());
-		int expectedConsumption = costPer * pylons.size();
+		int costPer = Math.max(1, totalCost / pylonCache.size());
+		int expectedConsumption = costPer * pylonCache.size();
 
-		for(BlockPos pos : pylons) {
+		for(BlockPos pos : pylonCache) {
 			TileEntity tile = world.getTileEntity(getPos().add(pos));
 			if(tile instanceof TilePylon) {
 				TilePylon pylon = (TilePylon) tile;
