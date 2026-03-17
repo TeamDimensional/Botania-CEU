@@ -168,6 +168,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 
 	public int ticksOpen = 0;
 	private int ticksSinceLastItem = 0;
+	private List<BlockPos> pylonCache = new ArrayList<>();
 	private boolean closeNow = false;
 	private boolean explode = false;
 
@@ -354,7 +355,7 @@ public class TileAlfPortal extends TileMod implements ITickable {
 				cumulativeCount += match.getCount();
 
 			if(cumulativeCount == recipe.getInputs().size()) {
-				if(consumeMana(null, 500, false)) {
+				if(consumeMana(pylonCache, 500, false)) {
 					for(ItemStack match : matches)
 						if (!stacksIn.remove(match))
 							return;
@@ -469,8 +470,10 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		if(ticksOpen < 50)
 			return;
 
-		List<BlockPos> pylons = locatePylons();
-		for(BlockPos pos : pylons) {
+		if(pylonCache == null || pylonCache.isEmpty() || pylonCache.size() < 2)
+			pylonCache = locatePylons();
+
+		for(BlockPos pos : pylonCache) {
 			TileEntity tile = world.getTileEntity(getPos().add(pos));
 			if(tile instanceof TilePylon) {
 				TilePylon pylon = (TilePylon) tile;
@@ -480,15 +483,20 @@ public class TileAlfPortal extends TileMod implements ITickable {
 		}
 
 		if(ticksOpen == 50)
-			consumeMana(pylons, 200000, true);
+			consumeMana(pylonCache, 200000, true);
 	}
 
 	public boolean consumeMana(@Nullable List<BlockPos> pylons, int totalCost, boolean close) {
+		IBlockState pylonState = ModBlocks.pylon.getDefaultState().withProperty(BotaniaStateProps.PYLON_VARIANT, PylonVariant.NATURA);
+		IBlockState poolState = ModBlocks.pool.getDefaultState();
 		List<TilePool> consumePools = new ArrayList();
 		int consumed = 0;
 
-		if(pylons == null)
-			pylons = locatePylons();
+		for (BlockPos pos : pylons)
+			if (!checkPosition(pos, pylonState, false) || !checkPosition(pos.down(), poolState, true)) {
+				pylons = locatePylons();
+				pylonCache = pylons;
+			}
 
 		if(pylons.size() < 2) {
 			closeNow = true;
