@@ -97,6 +97,7 @@ public class RecipeTerrestrialAgglomeration {
                 if (compareStacks(recipeStack, userInputStack) && recipeStack.getCount() == userInputStack.getCount()) {
                     usedRecipeStackCount++;
                     usedUserInputs[i] = true;
+                    break;
                 }
             }
         }
@@ -117,6 +118,7 @@ public class RecipeTerrestrialAgglomeration {
                     if (compareStacks(oreStack, userInputStack) && userInputStack.getCount() == 1) {
                         usedOreKeyCount++;
                         usedUserInputs[i] = true;
+                        break;
                     }
                 }
             }
