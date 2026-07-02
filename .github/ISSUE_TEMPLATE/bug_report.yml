@@ -1,0 +1,91 @@
+name: Bug Report
+description: Something is wrong with Botania CEu.
+title: "[Bug]: "
+labels: ["bug"]
+type: bug
+body:
+  - type: checkboxes
+    id: modpack
+    attributes:
+      label: Modpack
+      description: If you are playing a modpack and neither of the options below fits your problem, you should bisect to determine a sufficiently small set of mods that causes this issue. To bisect, try reproducing this bug with only Botania CEu, Baubles and the mods that are required for the bug (do not remove Fugue if you use Cleanroom). If the bug disappears, add chunks of mods until the bug reappears, and if the bug persists, remove chunks of mods until it gets fixed. Repeat this until you have a small set of mods that still can reproduce the issue.
+      options:
+        - label: The issue occurs with only Botania CEu and Baubles (or any fork) installed.
+        - label: "The issue occurs with Botania CEu, Baubles (or any fork) and the following mods (at most 7 other mods):"
+        - label: "The issue occurs in the following public modpack (mention the version too):"
+    validations:
+      required: true
+  - type: input
+    id: modpack-input
+    attributes:
+      label: Modpack information
+      description: If the issue happens with only Botania CEu and Baubles (or any fork), leave this empty.
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: Mod Versions
+      description: What versions of Botania CEu and Baubles are installed? Which Baubles fork are you using, if any (the commonly used forks are Bubbles and Baubles EX)? Don't use "latest".
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - MacOS
+        - Linux
+        - Other (mention below)
+    validations:
+      required: true
+  - type: dropdown
+    id: modloader
+    attributes:
+      label: Modloader
+      options:
+        - Cleanroom (mention version below)
+        - Forge, anywhere between build 2847-2860
+        - Other (mention below)
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment information
+      description: Which version of Java do you use (examples of Java versions are 1.8.0_492 and 25.0.3)? Also, add any mentions from the questions above.
+    validations:
+      required: true
+  - type: dropdown
+    id: server
+    attributes:
+      label: Server/Client?
+      options:
+        - Singleplayer
+        - Server
+        - Client
+        - LAN Server
+    validations:
+      required: true
+  - type: input
+    id: log-output
+    attributes:
+      label: Relevant log output
+      description: If you're reporting a crash or there's any relevant information in the logs, upload the crash report/log somewhere (i.e. mclo.gs) and put the link here.
+    validations:
+      required: false
+  - type: upload
+    id: screenshots
+    attributes:
+      label: Upload screenshots
+      description: If applicable, add screenshots to help explain your problem.
+    validations:
+      required: false
