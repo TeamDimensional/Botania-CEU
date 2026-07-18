@@ -1,5 +1,14 @@
 # Changelog
 
+## [r1.10-374] - 2026-07-18
+
+### Fixes
+
+- Fixed Terrestrial Agglomeration Plate recipe cheese
+- Fixed certain mod items randomly getting empty NBT tags
+    - This fix is not 100% tested, please report any NBT-related bugs to the tracker
+- Fixed the advanced Baubles tooltip not working correctly
+
 ## [r1.10-373a] - 2026-06-01
 
 ### Fixes
