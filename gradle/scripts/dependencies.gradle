@@ -42,12 +42,20 @@ repositories {
 def load_thaumcraft = false
 def load_drawers = false
 def load_albedo = false
-def load_groovyscript = false
+def load_groovyscript = true
 def load_aa = false
+
+// Exactly 1 should be enabled
+def use_baubles = true
+def use_bubbles = false
+def use_baubles_ex = false
+if ((use_baubles ? 1 : 0) + (use_bubbles ? 1 : 0) + (use_baubles_ex ? 1 : 0) != 1) {
+    throw new IllegalArgumentException("incorrectly configured baubles dependencies")
+}
 
 final def compile_dependencies = [
         'com.mod-buildcraft:buildcraft-api:7.99.17': [true],    // compile-time + runtime dependency, API
-        'curse.maven:baubles-227083:2518667': [true],        // compile-time + runtime dependency
+        'curse.maven:baubles-227083:2518667': [use_baubles],    // compile-time + runtime dependency
         'curse.maven:had-enough-items-557549:7515497': [true],  // compile-time dependency + dev env
         'curse.maven:thaumcraft-223628:2629023': [load_thaumcraft],
         'curse.maven:albedo-275300:2714505': [load_albedo],
@@ -60,6 +68,8 @@ final def runtime_only_dependencies = [
         'curse.maven:chameleon-230497:2450900': [load_drawers],
         'curse.maven:mixin-booter-419286:7049694': [load_groovyscript],
         'curse.maven:actually-additions-228404:3117927': [load_aa],
+        'curse.maven:bubbles-a-baubles-fork-995393:7736064': [use_bubbles],
+        'curse.maven:baubles-ex-1096600:7977063': [use_baubles_ex],
 ]
 
 dependencies {

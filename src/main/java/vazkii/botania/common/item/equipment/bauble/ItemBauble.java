@@ -37,6 +37,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import vazkii.botania.api.item.ICosmeticAttachable;
 import vazkii.botania.api.item.IPhantomInkable;
+import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.core.handler.ModSounds;
 import vazkii.botania.common.core.helper.ItemNBTHelper;
 import vazkii.botania.common.core.helper.PlayerHelper;
@@ -144,7 +145,11 @@ public abstract class ItemBauble extends ItemMod implements IBauble, ICosmeticAt
 
 	@SideOnly(Side.CLIENT)
 	public void addHiddenTooltip(ItemStack par1ItemStack, World world, List<String> stacks, ITooltipFlag flags) {
-		String key = vazkii.botania.client.core.helper.RenderHelper.getKeyDisplayString("Baubles Inventory");
+		String key = RenderHelper.getKeyDisplayString("keybind.baublesinventory");
+		if (key == null) {
+			// Baubles EX :(
+			key = RenderHelper.getKeyDisplayString("Open Baubles' Sidebar");
+		}
 
 		if(key != null)
 			addStringToTooltip(I18n.format("botania.baubletooltip", key), stacks);
