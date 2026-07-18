@@ -151,7 +151,7 @@ public abstract class ItemBrewBase extends ItemMod implements IBrewItem {
 
 	@Nonnull
 	public static String getSubtype(ItemStack stack) {
-		return stack.hasTagCompound() ? ItemNBTHelper.getString(stack, TAG_BREW_KEY, "none") : "none";
+		return ItemNBTHelper.getString(stack, TAG_BREW_KEY, "none");
 	}
 	
 	public int getSwigsLeft(ItemStack stack) {

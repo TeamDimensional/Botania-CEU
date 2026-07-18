@@ -81,12 +81,14 @@ public final class ItemNBTHelper {
 
 	public static void removeEntry(ItemStack stack, String tag) {
 		getNBT(stack).removeTag(tag);
+		if (stack.getTagCompound().getSize() == 0)
+			stack.setTagCompound(null);
 	}
 
 	// GETTERS ///////////////////////////////////////////////////////////////////
 
 	public static boolean verifyExistance(ItemStack stack, String tag) {
-		return !stack.isEmpty() && getNBT(stack).hasKey(tag);
+		return !stack.isEmpty() && stack.hasTagCompound() && getNBT(stack).hasKey(tag);
 	}
 
 	public static boolean getBoolean(ItemStack stack, String tag, boolean defaultExpected) {

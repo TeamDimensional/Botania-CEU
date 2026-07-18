@@ -38,7 +38,7 @@ public class KeepIvyRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements 
 			if(!stack.isEmpty()) {
 				if(stack.getItem() == ModItems.keepIvy)
 					foundIvy = true;
-				else if(!foundItem && !(stack.hasTagCompound() && ItemNBTHelper.getBoolean(stack, ItemKeepIvy.TAG_KEEP, false)) && !stack.getItem().hasContainerItem(stack))
+				else if(!foundItem && !ItemNBTHelper.getBoolean(stack, ItemKeepIvy.TAG_KEEP, false) && !stack.getItem().hasContainerItem(stack))
 					foundItem = true;
 				else return false;
 			}

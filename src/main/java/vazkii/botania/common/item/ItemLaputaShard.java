@@ -246,13 +246,9 @@ public class ItemLaputaShard extends ItemMod implements ILensEffect, ITinyPlanet
 
 				if(entity.world.isAirBlock(pos)) {
 					Block block = Blocks.AIR;
-					if (lens.hasTagCompound()) {
-						if (lens.getTagCompound().hasKey(TAG_BLOCK_NAME)) {
-							block = Block.getBlockFromName(ItemNBTHelper.getString(lens, TAG_BLOCK_NAME, ""));
-						} else if (lens.getTagCompound().hasKey(TAG_BLOCK)) {
-							// Attempt to read legacy tag (integer ID) if string block ID is absent
-							block = Block.getBlockById(ItemNBTHelper.getInt(lens, TAG_BLOCK, 0));
-						}
+					String blockName = ItemNBTHelper.getString(lens, TAG_BLOCK_NAME, null);
+					if (blockName != null) {
+						block = Block.getBlockFromName(ItemNBTHelper.getString(lens, TAG_BLOCK_NAME, ""));
 					}
 					int meta = ItemNBTHelper.getInt(lens, TAG_META, 0);
 

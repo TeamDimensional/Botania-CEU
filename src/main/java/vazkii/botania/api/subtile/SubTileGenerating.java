@@ -32,6 +32,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.internal.IManaNetwork;
 import vazkii.botania.api.mana.IManaCollector;
+import vazkii.botania.common.core.helper.ItemNBTHelper;
 
 import java.awt.Color;
 import java.util.List;
@@ -204,10 +205,7 @@ public class SubTileGenerating extends SubTileEntity {
 		if(isPassiveFlower() && ticksExisted > 0 && BotaniaAPI.internalHandler.getPassiveFlowerDecay() > 0) {
 			ItemStack drop = drops.get(0);
 			if(!drop.isEmpty()) {
-				if(!drop.hasTagCompound())
-					drop.setTagCompound(new NBTTagCompound());
-				NBTTagCompound cmp = drop.getTagCompound();
-				cmp.setInteger(TAG_PASSIVE_DECAY_TICKS, passiveDecayTicks);
+				ItemNBTHelper.setInt(drop, TAG_PASSIVE_DECAY_TICKS, passiveDecayTicks);
 			}
 		}
 	}
@@ -216,8 +214,7 @@ public class SubTileGenerating extends SubTileEntity {
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase entity, ItemStack stack) {
 		super.onBlockPlacedBy(world, pos, state, entity, stack);
 		if(isPassiveFlower()) {
-			NBTTagCompound cmp = stack.getTagCompound();
-			passiveDecayTicks = cmp.getInteger(TAG_PASSIVE_DECAY_TICKS);
+			passiveDecayTicks = ItemNBTHelper.getInt(stack, TAG_PASSIVE_DECAY_TICKS, 0);
 		}
 	}
 

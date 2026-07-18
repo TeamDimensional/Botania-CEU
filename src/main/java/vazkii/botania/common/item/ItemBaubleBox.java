@@ -29,6 +29,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import vazkii.botania.api.mana.IManaItem;
 import vazkii.botania.client.gui.box.ContainerBaubleBox;
 import vazkii.botania.common.Botania;
+import vazkii.botania.common.core.helper.ItemNBTHelper;
 import vazkii.botania.common.lib.LibGuiIDs;
 import vazkii.botania.common.lib.LibItemNames;
 
@@ -90,16 +91,11 @@ public class ItemBaubleBox extends ItemMod {
 
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-		if(stack.getTagCompound() != null && stack.getTagCompound().hasKey(TAG_ITEMS)) {
-			NBTTagList oldData = stack.getTagCompound().getTagList(TAG_ITEMS, Constants.NBT.TAG_COMPOUND);
+		NBTTagList oldData = ItemNBTHelper.getList(stack, TAG_ITEMS, Constants.NBT.TAG_COMPOUND, true);
+		if (oldData != null) {
 			IItemHandler newInv = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-
 			CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.readNBT(newInv, null, oldData);
-
-			stack.getTagCompound().removeTag(TAG_ITEMS);
-
-			if(stack.getTagCompound().getSize() == 0)
-				stack.setTagCompound(null);
+			ItemNBTHelper.removeEntry(stack, TAG_ITEMS);
 		}
 	}
 

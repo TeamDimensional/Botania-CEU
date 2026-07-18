@@ -35,6 +35,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import vazkii.botania.api.internal.VanillaPacketDispatcher;
 import vazkii.botania.common.Botania;
 import vazkii.botania.common.advancements.UseItemSuccessTrigger;
+import vazkii.botania.common.core.helper.ItemNBTHelper;
 import vazkii.botania.common.lib.LibItemNames;
 
 import javax.annotation.Nonnull;
@@ -53,12 +54,7 @@ public class ItemSpawnerMover extends ItemMod {
 	}
 
 	public static NBTTagCompound getSpawnerTag(ItemStack stack) {
-		NBTTagCompound tag = stack.getTagCompound();
-		if(tag != null && tag.hasKey(TAG_SPAWNER)) {
-			return tag.getCompoundTag(TAG_SPAWNER);
-		}
-
-		return null;
+		return ItemNBTHelper.getCompound(stack, TAG_SPAWNER, true);
 	}
 
 	private static String getEntityId(ItemStack stack) {
@@ -92,12 +88,11 @@ public class ItemSpawnerMover extends ItemMod {
 		if(getEntityId(itemstack) == null) {
 			if(world.getBlockState(pos).getBlock() == Blocks.MOB_SPAWNER) {
 				if(!world.isRemote) {
-					TileEntity te = world.getTileEntity(pos);
 					NBTTagCompound tag = new NBTTagCompound();
-					tag.setTag(TAG_SPAWNER, new NBTTagCompound());
-					te.writeToNBT(tag.getCompoundTag(TAG_SPAWNER));
+					world.getTileEntity(pos).writeToNBT(tag);
+					ItemNBTHelper.setCompound(itemstack, TAG_SPAWNER, tag);
+
 					player.getCooldownTracker().setCooldown(this, 20);
-					itemstack.setTagCompound(tag);
 					world.setBlockToAir(pos);
 					UseItemSuccessTrigger.INSTANCE.trigger((EntityPlayerMP) player, itemstack, (WorldServer) world, pos.getX(), pos.getY(), pos.getZ());
 					player.renderBrokenItemStack(itemstack);
@@ -155,9 +150,8 @@ public class ItemSpawnerMover extends ItemMod {
 		Block block = world.getBlockState(pos).getBlock();
 		if(block == Blocks.MOB_SPAWNER) {
 			TileEntity te = world.getTileEntity(pos);
-			NBTTagCompound tag = stack.getTagCompound();
-			if (te instanceof TileEntityMobSpawner && tag.hasKey(TAG_SPAWNER)) {
-				tag = tag.getCompoundTag(TAG_SPAWNER);
+			NBTTagCompound tag = ItemNBTHelper.getCompound(stack, TAG_SPAWNER, true);
+			if (te instanceof TileEntityMobSpawner && tag != null) {
 				tag.setInteger("x", pos.getX());
 				tag.setInteger("y", pos.getY());
 				tag.setInteger("z", pos.getZ());

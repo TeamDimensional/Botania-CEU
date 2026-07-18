@@ -16,6 +16,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import vazkii.botania.common.core.helper.ItemNBTHelper;
 import vazkii.botania.common.item.ModItems;
 
 import javax.annotation.Nonnull;
@@ -64,7 +65,7 @@ public class SpellClothRecipe extends IForgeRegistryEntry.Impl<IRecipe> implemen
 		if(stackToDisenchant.isEmpty())
 			return ItemStack.EMPTY;
 
-		stackToDisenchant.getTagCompound().removeTag("ench"); // Remove enchantments
+		ItemNBTHelper.removeEntry(stackToDisenchant, "ench"); // Remove enchantments
 		return stackToDisenchant;
 	}
 
