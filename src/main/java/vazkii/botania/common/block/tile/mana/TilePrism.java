@@ -27,6 +27,11 @@ import javax.annotation.Nonnull;
 public class TilePrism extends TileSimpleInventory {
 
 	public void onBurstCollision(IManaBurst burst) {
+		if (burst.hasAlreadyCollidedAt(getPos())) {
+			return;
+		}
+		burst.setCollidedAt(getPos());
+
 		ItemStack lens = itemHandler.getStackInSlot(0);
 		boolean active = !world.getBlockState(getPos()).getValue(BotaniaStateProps.POWERED);
 		boolean valid = !lens.isEmpty() && lens.getItem() instanceof ILens && (!(lens.getItem() instanceof ITinyPlanetExcempt) || ((ITinyPlanetExcempt) lens.getItem()).shouldPull(lens));
@@ -48,6 +53,7 @@ public class TilePrism extends TileSimpleInventory {
 				burst.setManaLossPerTick(properties.manaLossPerTick);
 				burst.setGravity(properties.gravity);
 				burst.setMotion(burstEntity.motionX * properties.motionModifier, burstEntity.motionY * properties.motionModifier,burstEntity.motionZ * properties.motionModifier);
+				burst.setMana(Math.min(burst.getMana(), burst.getStartingMana()));
 			}
 		}
 	}

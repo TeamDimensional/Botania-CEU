@@ -32,7 +32,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -45,6 +48,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -84,6 +88,7 @@ public class EntityManaBurst extends EntityThrowable implements IManaBurst {
 	private static final String TAG_HAS_SHOOTER = "hasShooter";
 	private static final String TAG_SHOOTER_UUID_MOST = "shooterUUIDMost";
 	private static final String TAG_SHOOTER_UUID_LEAST = "shooterUUIDLeast";
+	private static final String TAG_ALREADY_COLLIDED_AT = "alreadyCollidedAt";
 
 	private static final DataParameter<Integer> COLOR = EntityDataManager.createKey(EntityManaBurst.class, DataSerializers.VARINT);
 	private static final DataParameter<Integer> MANA = EntityDataManager.createKey(EntityManaBurst.class, DataSerializers.VARINT);
@@ -416,6 +421,12 @@ public class EntityManaBurst extends EntityThrowable implements IManaBurst {
 			par1nbtTagCompound.setLong(TAG_SHOOTER_UUID_MOST, identity.getMostSignificantBits());
 			par1nbtTagCompound.setLong(TAG_SHOOTER_UUID_LEAST, identity.getLeastSignificantBits());
 		}
+
+		NBTTagList collidedNbt = new NBTTagList();
+		for (BlockPos pos : alreadyCollidedAt) {
+			collidedNbt.appendTag(NBTUtil.createPosTag(pos));
+		}
+		par1nbtTagCompound.setTag(TAG_ALREADY_COLLIDED_AT, collidedNbt);
 	}
 
 	@Override
@@ -454,6 +465,14 @@ public class EntityManaBurst extends EntityThrowable implements IManaBurst {
 			UUID identity = getShooterUUID();
 			if(identity == null || most != identity.getMostSignificantBits() || least != identity.getLeastSignificantBits())
 				shooterIdentity = new UUID(most, least);
+		}
+
+		if (par1nbtTagCompound.hasKey(TAG_ALREADY_COLLIDED_AT)) {
+			NBTTagList collidedNbt = par1nbtTagCompound.getTagList(TAG_ALREADY_COLLIDED_AT, NBT.TAG_COMPOUND);
+			alreadyCollidedAt.clear();
+			for (NBTBase posTag : collidedNbt) {
+				alreadyCollidedAt.add(NBTUtil.getPosFromTag((NBTTagCompound) posTag));
+			}
 		}
 	}
 
