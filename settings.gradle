@@ -9,6 +9,15 @@ pluginManagement {
                 includeGroup 'com.gtnewhorizons.retrofuturagradle'
             }
         }
+        maven {
+            // CurseGradle
+            name 'Max Henkel'
+            url 'https://maven.maxhenkel.de/releases/'
+            mavenContent {
+                includeGroup 'de.maxhenkel'
+                includeGroup 'de.maxhenkel.cursegradle'
+            }
+        }
         gradlePluginPortal()
         mavenCentral()
         mavenLocal()
