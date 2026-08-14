@@ -60,14 +60,14 @@ public class ItemLokiRing extends ItemRelicBauble implements IWireframeCoordinat
 	private static final String TAG_Z_ORIGIN = "zOrigin";
 
 	public ItemLokiRing() {
-		super(LibItemNames.LOKI_RING);
+		super(LibItemNames.LOKI_RING, true);
 	}
 
 	@SubscribeEvent
 	public static void onPlayerInteract(PlayerInteractEvent.RightClickBlock event) {
 		EntityPlayer player = event.getEntityPlayer();
 		ItemStack lokiRing = getLokiRing(player);
-		if(lokiRing.isEmpty() || !player.isSneaking())
+		if(lokiRing.isEmpty() || !player.isSneaking() || !isActive(lokiRing))
 			return;
 
 		int slot = -1;
@@ -136,7 +136,7 @@ public class ItemLokiRing extends ItemRelicBauble implements IWireframeCoordinat
 
 	public static void breakOnAllCursors(EntityPlayer player, Item item, ItemStack stack, BlockPos pos, EnumFacing side) {
 		ItemStack lokiRing = getLokiRing(player);
-		if(lokiRing.isEmpty() || player.world.isRemote || !(item instanceof ISequentialBreaker))
+		if(lokiRing.isEmpty() || player.world.isRemote || !(item instanceof ISequentialBreaker) || !isActive(lokiRing))
 			return;
 
 		List<BlockPos> cursors = getCursorList(lokiRing);
@@ -165,7 +165,7 @@ public class ItemLokiRing extends ItemRelicBauble implements IWireframeCoordinat
 	@Override
 	@SideOnly(Side.CLIENT)
 	public List<BlockPos> getWireframesToDraw(EntityPlayer player, ItemStack stack) {
-		if(getLokiRing(player) != stack)
+		if(getLokiRing(player) != stack || !isActive(stack))
 			return ImmutableList.of();
 
 		RayTraceResult lookPos = Minecraft.getMinecraft().objectMouseOver;

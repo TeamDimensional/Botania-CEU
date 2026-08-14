@@ -57,11 +57,28 @@ public abstract class ItemBauble extends ItemMod implements IBauble, ICosmeticAt
 	private static final String TAG_BAUBLE_UUID_LEAST = "baubleUUIDLeast";
 	private static final String TAG_COSMETIC_ITEM = "cosmeticItem";
 	private static final String TAG_PHANTOM_INK = "phantomInk";
+	private static final String TAG_DISABLED = "baubleDisabled";
 
-	public ItemBauble(String name) {
+	private final boolean canBeDisabled;
+
+	public ItemBauble(String name, boolean canBeDisabled) {
 		super(name);
+		this.canBeDisabled = canBeDisabled;
 		setMaxStackSize(1);
 	}
+
+	public ItemBauble(String name) {
+		this(name, false);
+	}
+
+    private void toggle(ItemStack stack) {
+        boolean value = ItemNBTHelper.getBoolean(stack, TAG_DISABLED, false);
+        ItemNBTHelper.setBoolean(stack, TAG_DISABLED, !value);
+    }
+
+    protected static boolean isActive(ItemStack stack) {
+        return !ItemNBTHelper.getBoolean(stack, TAG_DISABLED, false);
+    }
 
 	// Apparently baubles doesn't unequip on death, which causes attribute modifiers to get weird/desync on respawn
 	// See Baubles#236
@@ -86,6 +103,14 @@ public abstract class ItemBauble extends ItemMod implements IBauble, ICosmeticAt
 	@Nonnull
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, @Nonnull EnumHand hand) {
+		if (canBeDisabled && GuiScreen.isShiftKeyDown()) {
+            ItemStack stack = player.getHeldItem(hand);
+            if (!world.isRemote) {
+                toggle(stack);
+            }
+            return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
+        }
+
 		ItemStack stack = player.getHeldItem(hand);
 		if(!EntityDoppleganger.isTruePlayer(player))
 			return ActionResult.newResult(EnumActionResult.FAIL, stack);
@@ -141,6 +166,9 @@ public abstract class ItemBauble extends ItemMod implements IBauble, ICosmeticAt
 		if(GuiScreen.isShiftKeyDown())
 			addHiddenTooltip(par1ItemStack, world, stacks, flags);
 		else addStringToTooltip(I18n.format("botaniamisc.shiftinfo"), stacks);
+        if (!isActive(par1ItemStack)) {
+            addStringToTooltip(I18n.format("botaniamisc.baubleDisabled"), stacks);
+        }
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -162,7 +190,7 @@ public abstract class ItemBauble extends ItemMod implements IBauble, ICosmeticAt
 			addStringToTooltip(I18n.format("botaniamisc.hasPhantomInk"), stacks);
 	}
 
-	void addStringToTooltip(String s, List<String> tooltip) {
+	protected void addStringToTooltip(String s, List<String> tooltip) {
 		tooltip.add(s.replaceAll("&", "\u00a7"));
 	}
 

@@ -52,7 +52,7 @@ public class ItemMagnetRing extends ItemBauble {
 	}
 
 	public ItemMagnetRing(String name, int range) {
-		super(name);
+		super(name, true);
 		this.range = range;
 		addPropertyOverride(new ResourceLocation("botania", "on"), (stack, worldIn, entityIn) -> ItemMagnetRing.getCooldown(stack) <= 0 ? 1 : 0);
 	}
@@ -73,7 +73,7 @@ public class ItemMagnetRing extends ItemBauble {
 	public void onWornTick(ItemStack stack, EntityLivingBase living) {
 		super.onWornTick(stack, living);
 
-		if(living instanceof EntityPlayer && ((EntityPlayer) living).isSpectator())
+		if (!isActive(stack) || (living instanceof EntityPlayer && ((EntityPlayer) living).isSpectator()))
 			return;
 
 		int cooldown = getCooldown(stack);

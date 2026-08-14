@@ -52,8 +52,7 @@ public class ItemBloodPendant extends ItemBauble implements IBrewContainer, IBre
 	private static final String TAG_BREW_KEY = "brewKey";
 
 	public ItemBloodPendant() {
-		super(LibItemNames.BLOOD_PENDANT);
-		setMaxStackSize(1);
+		super(LibItemNames.BLOOD_PENDANT, true);
 	}
 
 	@Override
@@ -94,7 +93,7 @@ public class ItemBloodPendant extends ItemBauble implements IBrewContainer, IBre
 	@Override
 	public void onWornTick(ItemStack stack, EntityLivingBase player) {
 		Brew brew = getBrew(stack);
-		if(brew != BotaniaAPI.fallbackBrew && player instanceof EntityPlayer && !player.world.isRemote) {
+		if(isActive(stack) && brew != BotaniaAPI.fallbackBrew && player instanceof EntityPlayer && !player.world.isRemote) {
 			EntityPlayer eplayer = (EntityPlayer) player;
 			PotionEffect effect = brew.getPotionEffects(stack).get(0);
 			float cost = (float) brew.getManaCost(stack) / effect.getDuration() / (1 + effect.getAmplifier()) * 2.5F;

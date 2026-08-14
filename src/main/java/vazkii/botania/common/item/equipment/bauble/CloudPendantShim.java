@@ -16,14 +16,16 @@ import net.minecraft.item.ItemStack;
 public abstract class CloudPendantShim extends ItemBauble {
 
 	public CloudPendantShim(String name) {
-		super(name);
+		super(name, true);
 	}
 
 	@Override
 	public void onWornTick(ItemStack stack, EntityLivingBase player) {
 		super.onWornTick(stack, player);
 
-		clientWornTick(stack, player);
+		if (isActive(stack)) {
+			clientWornTick(stack, player);
+		}
 	}
 
 	public void clientWornTick(ItemStack stack, EntityLivingBase player) {

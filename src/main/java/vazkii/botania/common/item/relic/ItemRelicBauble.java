@@ -35,6 +35,10 @@ public abstract class ItemRelicBauble extends ItemBauble implements IRelic {
 		super(name);
 	}
 
+	public ItemRelicBauble(String name, boolean canBeDisabled) {
+		super(name, canBeDisabled);
+	}
+
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int slot, boolean held) {
 		if(entity instanceof EntityPlayer)

@@ -32,7 +32,7 @@ import vazkii.botania.common.lib.LibItemNames;
 public class ItemIcePendant extends ItemBauble implements IBaubleRender {
 
 	public ItemIcePendant() {
-		super(LibItemNames.ICE_PENDANT);
+		super(LibItemNames.ICE_PENDANT, true);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class ItemIcePendant extends ItemBauble implements IBaubleRender {
 	@Override
 	public void onWornTick(ItemStack stack, EntityLivingBase entity) {
 		super.onWornTick(stack, entity);
-		if(!entity.world.isRemote) {
+		if(!entity.world.isRemote && isActive(stack)) {
 			boolean lastOnGround = entity.onGround;
 			entity.onGround = true;
 			EnchantmentFrostWalker.freezeNearby(entity, entity.world, new BlockPos(entity), 8);

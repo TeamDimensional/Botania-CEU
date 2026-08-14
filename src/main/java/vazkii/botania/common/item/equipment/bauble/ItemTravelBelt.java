@@ -56,7 +56,7 @@ public class ItemTravelBelt extends ItemBauble implements IBaubleRender, IManaUs
 	}
 
 	public ItemTravelBelt(String name, float speed, float jump, float fallBuffer) {
-		super(name);
+		super(name, true);
 		this.speed = speed;
 		this.jump = jump;
 		this.fallBuffer = fallBuffer;
@@ -74,12 +74,13 @@ public class ItemTravelBelt extends ItemBauble implements IBaubleRender, IManaUs
 			String s = playerStr(player);
 
 			ItemStack belt = BaublesApi.getBaublesHandler(player).getStackInSlot(3);
+
 			if(playersWithStepup.contains(s)) {
 				if(shouldPlayerHaveStepup(player)) {
 					ItemTravelBelt beltItem = (ItemTravelBelt) belt.getItem();
 
 					if(player.world.isRemote) {
-						if((player.onGround || player.capabilities.isFlying) && player.moveForward > 0F && !player.isInsideOfMaterial(Material.WATER)) {
+						if(isActive(belt) && (player.onGround || player.capabilities.isFlying) && player.moveForward > 0F && !player.isInsideOfMaterial(Material.WATER)) {
 							float speed = beltItem.getSpeed(belt);
 							player.moveRelative(0F, 0F, 1F, player.capabilities.isFlying ? speed : speed);
 							beltItem.onMovedTick(belt, player);
@@ -118,7 +119,7 @@ public class ItemTravelBelt extends ItemBauble implements IBaubleRender, IManaUs
 			EntityPlayer player = (EntityPlayer) event.getEntityLiving();
 			ItemStack belt = BaublesApi.getBaublesHandler(player).getStackInSlot(3);
 
-			if(!belt.isEmpty() && belt.getItem() instanceof ItemTravelBelt && ManaItemHandler.requestManaExact(belt, player, COST, false)) {
+			if(isActive(belt) && !belt.isEmpty() && belt.getItem() instanceof ItemTravelBelt && ManaItemHandler.requestManaExact(belt, player, COST, false)) {
 				player.motionY += ((ItemTravelBelt) belt.getItem()).jump;
 				player.fallDistance = -((ItemTravelBelt) belt.getItem()).fallBuffer;
 			}
