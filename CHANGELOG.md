@@ -1,5 +1,24 @@
 # Changelog
 
+## [r1.10-375] - 2026-08-22
+
+### Tweaks
+
+- Certain Baubles can now be disabled with shift-right-click
+    - This supports: Cirrus Amulet, Nimbus Pendant, Tainted Blood Pendant, Snowflake Pendant, Ring of Magnetization, Greater Ring of Magnetization, Sojourner's Sash, Globetrotter's Sash, Planestrider's Sash, Ring of Chordata, Ring of Loki
+- Mana Enchanter will now display particles changing their color as the enchantment process is going
+- Added a config option to make Mana Enchanter able to upgrade already enchanted items
+
+### Fixes
+
+- Mana Enchanter can no longer apply enchantments for free due to integer overflow
+- Mana Enchanter can now apply enchantments over level 127
+- Ender Air will no longer block picking up Dragon's Breath (thank you Brycey92!)
+    - Note that existing Ender Air automations might need to be replaced due to this change
+- Added a generic colored-item localization (i.e. generic Petal) for modpack devs
+- Mana Prism will now cap the amount of mana in bursts if lenses such as Messenger are used
+- Fixed a bug where the same Mana Prism could affect the same burst twice
+
 ## [r1.10-374] - 2026-07-18
 
 ### Fixes
