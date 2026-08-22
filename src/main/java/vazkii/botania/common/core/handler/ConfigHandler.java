@@ -374,6 +374,11 @@ public final class ConfigHandler {
 	@Config.Comment("Should seeds dropped from Tall Grass be diversified? Part of Garden of Glass.")
 	public static boolean diverseSeedDrops = false;
 
+	@Config.Name("ceu.opManaEnchanter")
+	@Config.LangKey("botania.config.opManaEnchanter")
+	@Config.Comment("Should Mana Enchanter be able to add enchantments to items that are already enchanted?")
+	public static boolean opManaEnchanter = false;
+
 	@Config.Ignore
 	public static Set<String> runicAltarCatalystsSet = new HashSet<>();
 

@@ -45,6 +45,7 @@ import vazkii.botania.api.state.BotaniaStateProps;
 import vazkii.botania.client.core.helper.RenderHelper;
 import vazkii.botania.common.Botania;
 import vazkii.botania.common.block.ModBlocks;
+import vazkii.botania.common.core.handler.ConfigHandler;
 import vazkii.botania.common.core.handler.ModSounds;
 import vazkii.botania.common.network.PacketBotaniaEffect;
 import vazkii.botania.common.network.PacketHandler;
@@ -66,7 +67,9 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 	private static final String TAG_MANA = "mana";
 	private static final String TAG_ITEM = "item";
 	private static final String TAG_ENCHANTS = "enchantsToApply";
-	private static final int CRAFT_EFFECT_EVENT = 0;
+	private static final int CRAFT_FINISHED_EVENT = 0;
+	private static final int CRAFT_PROGRESS_EVENT = 1;
+	private static final float MAX_MANA_TO_ENCHANT = 1e9f;
 
 	public State stage = State.IDLE;
 	public int stageTicks = 0;
@@ -116,8 +119,12 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 		return mb.makeSet();
 	}
 
+	public static boolean canBeEnchanted(ItemStack stack) {
+		return stack.getItem() != Items.BOOK && stack.getItem().isEnchantable(stack) && (ConfigHandler.opManaEnchanter || !stack.isItemEnchanted());
+	}
+
 	public void onWanded(EntityPlayer player, ItemStack wand) {
-		if(stage != State.IDLE || itemToEnchant.isEmpty() || !itemToEnchant.isItemEnchantable())
+		if(stage != State.IDLE || itemToEnchant.isEmpty() || !canBeEnchanted(itemToEnchant))
 			return;
 
 		List<EntityItem> items = world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.getX() - 2, pos.getY(), pos.getZ() - 2, pos.getX() + 3, pos.getY() + 1, pos.getZ() + 3));
@@ -131,7 +138,8 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 					if(enchants.tagCount() > 0) {
 						NBTTagCompound enchant = enchants.getCompoundTagAt(0);
 						short id = enchant.getShort("id");
-						if(isEnchantmentValid(Enchantment.getEnchantmentByID(id))) {
+						short level = enchant.getShort("lvl");
+						if(isEnchantmentValid(Enchantment.getEnchantmentByID(id), level)) {
 							advanceStage();
 							return;
 						}
@@ -173,18 +181,22 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 		}
 	}
 
-	private void gatherMana(EnumFacing.Axis axis) {
+	private boolean gatherMana(EnumFacing.Axis axis) {
 		if(manaRequired == -1) {
 			manaRequired = 0;
+			float manaToEnchant = 0.0f;
 			for(EnchantmentData data : enchants) {
-				manaRequired += (int)
-								(5000F  * ((15 - Math.min(15, data.enchantment.getRarity().getWeight()))
-									* 1.05F)
-								* ((3F + data.enchantmentLevel * data.enchantmentLevel)
-									* 0.25F)
-								* (0.9F + enchants.size() * 0.05F)
-								* (data.enchantment.isTreasureEnchantment() ? 1.25F : 1F));
+				manaToEnchant += 5000F
+								 * ((15 - Math.min(15, data.enchantment.getRarity().getWeight())) * 1.05F)
+								 * ((3F + ((float) data.enchantmentLevel) * data.enchantmentLevel) * 0.25F)
+								 * (0.9F + enchants.size() * 0.05F)
+								 * (data.enchantment.isTreasureEnchantment() ? 1.25F : 1F);
 			}
+			if (manaToEnchant > MAX_MANA_TO_ENCHANT) {
+				return false;
+			}
+			manaRequired = (int) manaToEnchant;
+			return true;
 		} else if(mana >= manaRequired) {
 			manaRequired = 0;
 			for(BlockPos pylon : PYLON_LOCATIONS.get(axis)) {
@@ -194,6 +206,7 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 			}
 
 			advanceStage();
+			return true;
 		} else {
 			ISparkEntity spark = getAttachedSpark();
 			if(spark != null) {
@@ -208,6 +221,7 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 			}
 			if(stageTicks % 5 == 0)
 				sync();
+			return true;
 		}
 	}
 
@@ -234,35 +248,56 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 		if(!canEnchanterExist(world, pos, axis)) {
 			world.setBlockState(pos, Blocks.LAPIS_BLOCK.getDefaultState(), 1 | 2);
 			PacketHandler.sendToNearby(world, pos, new PacketBotaniaEffect(PacketBotaniaEffect.EffectType.ENCHANTER_DESTROY,
-					pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5));
+					pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5));
 			world.playSound(null, pos, ModSounds.enchanterFade, SoundCategory.BLOCKS, 0.5F, 10F);
 		}
 
 		switch(stage) {
-		case GATHER_ENCHANTS : gatherEnchants(); break;
-		case GATHER_MANA : gatherMana(axis); break;
-		case DO_ENCHANT : { // Enchant
-			if(stageTicks >= 100) {
-				for(EnchantmentData data : enchants)
-					if(EnchantmentHelper.getEnchantmentLevel(data.enchantment, itemToEnchant) == 0)
-						itemToEnchant.addEnchantment(data.enchantment, data.enchantmentLevel);
+		case GATHER_ENCHANTS:
+			gatherEnchants();
+			break;
+
+		case GATHER_MANA:
+			boolean success = gatherMana(axis);
+			if (!success) {
+				PacketHandler.sendToNearby(world, pos, new PacketBotaniaEffect(PacketBotaniaEffect.EffectType.ENCHANTER_DESTROY,
+						pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5));
+				stage = State.RESET;
+				stage3EndTicks = stageTicks;
+			} else if (stageTicks % 3 == 0) {
+				float progress = ((float) mana) / Math.max(1, manaRequired);
+				int progressPercentage = (int) (Math.min(progress, 1.0f) * 100);
+				world.addBlockEvent(getPos(), ModBlocks.enchanter, CRAFT_PROGRESS_EVENT, progressPercentage);
+			}
+			break;
+
+		case DO_ENCHANT:
+			if (stageTicks >= 100) {
+				Map<Enchantment, Integer> enchantmentLevels = EnchantmentHelper.getEnchantments(itemToEnchant);
+				for (EnchantmentData data : enchants)
+					if (enchantmentLevels.getOrDefault(data.enchantment, 0) < data.enchantmentLevel)
+						// itemToEnchant.addEnchantment(data.enchantment, data.enchantmentLevel);
+						// addEnchantment erroneously casts to byte
+						enchantmentLevels.put(data.enchantment, data.enchantmentLevel);
+				EnchantmentHelper.setEnchantments(enchantmentLevels, itemToEnchant);
 
 				enchants.clear();
 				manaRequired = -1;
 				mana = 0;
 
-				world.addBlockEvent(getPos(), ModBlocks.enchanter, CRAFT_EFFECT_EVENT, 0);
+				world.addBlockEvent(getPos(), ModBlocks.enchanter, CRAFT_FINISHED_EVENT, 0);
 				advanceStage();
 			}
 			break;
-		}
-		case RESET: { // Reset
+
+		case RESET:
 			if(stageTicks >= 20)
 				advanceStage();
 
 			break;
-		}
-		default: break;
+
+		default:
+			break;
 		}
 	}
 
@@ -290,7 +325,7 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 	@Override
 	public boolean receiveClientEvent(int event, int param) {
 		switch(event) {
-			case CRAFT_EFFECT_EVENT: {
+			case CRAFT_FINISHED_EVENT: {
 				if(world.isRemote) {
 					for(int i = 0; i < 25; i++) {
 						float red = (float) Math.random();
@@ -301,6 +336,20 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 								red, green, blue, (float) Math.random(), 10);
 					}
 					world.playSound(pos.getX(), pos.getY(), pos.getZ(), ModSounds.enchanterEnchant, SoundCategory.BLOCKS, 1F, 1F, false);
+				}
+				return true;
+			}
+			case CRAFT_PROGRESS_EVENT: {
+				if (world.isRemote) {
+					float[] start = {0.6f, 0.5f, 0.8f};
+					float[] end = {0.2f, 0.7f, 0.8f};
+					float[] color = PacketBotaniaEffect.lerpColor(start, end, param * 0.01f);
+					double x = getPos().getX() + 0.5;
+					double y = getPos().getY() + 1.5;
+					double z = getPos().getZ() + 0.5;
+					Botania.proxy.wispFX(x, y, z, color[0], color[1], color[2],
+							(float) Math.random() * 0.12F + 0.08F,
+							(float) (Math.random() - 0.5) * 0.05F, (float) (Math.random() - 0.5) * 0.05F, (float) (Math.random() - 0.5) * 0.05F, 0.9F);
 				}
 				return true;
 			}
@@ -389,12 +438,21 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 		return false;
 	}
 
-	private boolean isEnchantmentValid(@Nullable Enchantment ench) {
-		if(ench == null || !ench.canApply(itemToEnchant))
+	private boolean isEnchantmentValid(@Nullable Enchantment ench, int level) {
+		if (ench == null || !ench.canApply(itemToEnchant))
 			return false;
 
-		for(EnchantmentData data : enchants) {
+		for (EnchantmentData data : enchants) {
 			Enchantment otherEnch = data.enchantment;
+			if (!ench.isCompatibleWith(otherEnch))
+				return false;
+		}
+
+		Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(itemToEnchant);
+		if (enchants.getOrDefault(enchants, 0) >= level) {
+			return false;
+		}
+		for (Enchantment otherEnch : enchants.keySet()) {
 			if (!ench.isCompatibleWith(otherEnch))
 				return false;
 		}

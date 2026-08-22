@@ -187,9 +187,9 @@ public class PacketBotaniaEffect implements IMessage {
 					}
 					case ENCHANTER_DESTROY: {
 						for (int i = 0; i < 50; i++) {
-							float red = (float) Math.random();
-							float green = (float) Math.random();
-							float blue = (float) Math.random();
+							float red = ((float) Math.random()) * 0.4f + 0.6f;
+							float green = (float) Math.random() * 0.4f;
+							float blue = (float) Math.random() * 0.4f;
 							Botania.proxy.wispFX(message.x, message.y, message.z,
 									red, green, blue, (float) Math.random() * 0.15F + 0.15F,
 									(float) (Math.random() - 0.5F) * 0.25F, (float) (Math.random() - 0.5F) * 0.25F,
@@ -305,7 +305,7 @@ public class PacketBotaniaEffect implements IMessage {
 		return new float[] { red, green, blue };
 	}
 
-	private static float[] lerpColor(float[] left, float[] right, float mult) {
+	public static float[] lerpColor(float[] left, float[] right, float mult) {
 		return new float[] { left[0] * (1 - mult) + right[0] * mult, left[1] * (1 - mult) + right[1] * mult,
 				left[2] * (1 - mult) + right[2] * mult };
 	}

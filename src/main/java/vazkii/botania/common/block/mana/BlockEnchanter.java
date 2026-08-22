@@ -19,7 +19,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -112,8 +111,7 @@ public class BlockEnchanter extends BlockMod implements IWandable, ILexiconable,
 			return false;
 
 		boolean stackEnchantable = !stack.isEmpty()
-				&& stack.getItem() != Items.BOOK
-				&& stack.isItemEnchantable()
+				&& TileEnchanter.canBeEnchanted(stack)
 				&& stack.getCount() == 1;
 
 		if(enchanter.itemToEnchant.isEmpty()) {

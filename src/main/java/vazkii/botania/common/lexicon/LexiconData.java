@@ -695,7 +695,7 @@ public final class LexiconData {
 			manaEnchanting = new BasicLexiconEntry(LibLexicon.DEVICE_MANA_ENCHANTING, categoryDevices);
 			manaEnchanting
 			.setLexiconPages(new PageText("0"), new PageText("1"),
-					new PageMultiblock("2", ModMultiblocks.enchanter), new PageText("5"), new PageText("6"),
+					new PageMultiblock("2", ModMultiblocks.enchanter), new PageText("5"), new PageText(ConfigHandler.opManaEnchanter ? "6a" : "6"),
 					new PageText("7"), new PageText("8"), new PageText("9"))
 			.setIcon(new ItemStack(ModBlocks.enchanter));
 		}
