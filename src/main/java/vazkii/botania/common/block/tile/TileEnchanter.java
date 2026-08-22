@@ -163,7 +163,7 @@ public class TileEnchanter extends TileMod implements ISparkAttachable, ITickabl
 						short enchantId = enchant.getShort("id");
 						short enchantLvl = enchant.getShort("lvl");
 						Enchantment ench = Enchantment.getEnchantmentByID(enchantId);
-						if(!hasEnchantAlready(ench) && isEnchantmentValid(ench)) {
+						if(!hasEnchantAlready(ench) && isEnchantmentValid(ench, enchantLvl)) {
 							this.enchants.add(new EnchantmentData(ench, enchantLvl));
 							world.playSound(null, pos, ModSounds.ding, SoundCategory.BLOCKS, 1F, 1F);
 							addedEnch = true;
